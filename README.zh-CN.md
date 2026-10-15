@@ -2,9 +2,9 @@
 
 # VulnIntel
 
-[한국어](README.md) · [English](README.en.md) · **简体中文**
+[English](README.md) · [한국어](README.ko.md) · **简体中文**
 
-**汇集 NVD · OSV · GitHub Advisory · CISA KEV · EPSS · Exploit-DB · KISA 保护那罗等 9 个公开来源的漏洞数据，通过同一个网站和 API 提供。**
+**汇集 NVD · OSV · GitHub Advisory · CISA KEV · EPSS · Exploit-DB 等 9 个公开来源的漏洞数据，通过同一个网站和 API 提供。界面支持简体中文，CVE 标题和描述按优先级机器翻译为中文。**
 
 [![Website](https://img.shields.io/badge/Website-www.vulnintelapp.com-5b8def?style=for-the-badge)](https://www.vulnintelapp.com/)
 [![Developer Portal](https://img.shields.io/badge/API-Developer_Portal-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://www.vulnintelapp.com/zh/developers)
@@ -20,15 +20,24 @@
 
 ## 解决什么问题
 
-安全漏洞信息分散在各处。要把一个 CVE 看完整，得先去 NVD 查 CVSS，再到 OSV 或 GitHub Advisory 找受影响的软件包和修复版本，然后分别去 CISA KEV 看是否已被实际利用、去 EPSS 看被利用的可能性。韩国本地的安全公告又单独发布在 KISA 保护那罗上。这些信息大多是英文，要分享给团队还得重新整理。
+漏洞信息分散在多个来源。要把一个 CVE 看完整，得先去 NVD 查 CVSS，再到 OSV 或 GitHub Advisory 找受影响的软件包和修复版本，然后分别去 CISA KEV 看是否已被实际利用、去 EPSS 看被利用的可能性。这些来源基本都是英文，团队内部流转前往往还要先读原文、再整理成中文。
 
 | 问题 | 现状 |
 |------|------|
 | **数据分散** | 各来源的格式和标识符（CVE、GHSA、OSV ID）各不相同，光是把同一个漏洞对应起来就得手工完成。 |
+| **原文以英文为主** | NVD、GitHub Advisory、CISA KEV 的描述都是英文，逐条阅读、转述都要花时间。 |
 | **仅凭 CVSS 排不出先后** | CVSS 9.8 但没有利用信号的漏洞，和 CVSS 7.0 但已被用于攻击的漏洞，应该先修哪个？ |
-| **自建意味着长期维护** | 需要持续跟进各来源的调用频率限制、大体量数据转储、Schema 变更和去重。 |
+| **自建要长期维护** | 需要持续跟进各来源的调用频率限制、大体量数据转储、Schema 变更和去重。 |
 
-VulnIntel 每天采集这些来源，合并成一条漏洞记录，并附上综合考虑 CVSS 与利用信号的优先级（VPI），可在网站、API 和 CI 中使用。
+VulnIntel 每天采集这些来源，合并成一条漏洞记录，附上综合考虑 CVSS 与利用信号的优先级（VPI），并把 CVE 标题和描述机器翻译为中文，可在网站、API 和 CI 中使用。
+
+对中文用户来说，可以直接用上的是这几项：
+
+- 网站界面可切换为简体中文。API 详情接口传 `lang=zh` 返回中文标题和描述，尚未翻译的条目返回英文原文。
+- CVE 标题和描述按 VPI 从高到低机器翻译为中文，截至 2026-10-16 已完成 73,304 条，每 3 小时继续补充。
+- NVD、OSV、GitHub Advisory、CISA KEV、EPSS 等国际来源合并为一条记录，用 CVE、GHSA 或 OSV ID 都能查到。
+- VPI 等级（L1~L6）把 KEV 收录、公开 PoC、EPSS 和 CVSS 放在一起，给出处置的先后顺序。
+- 上传 lock 文件或 SBOM，按策略返回通过或失败，可作为 CI 门禁。
 
 ```mermaid
 flowchart LR
@@ -48,7 +57,7 @@ flowchart LR
     SRC --> COL["采集（定时调度）"]
     COL --> NORM["规范化 · 别名合并 · 去重"]
     NORM --> VPI["VPI 分数 · 等级计算"]
-    NORM --> TR["韩语 · 中文机器翻译"]
+    NORM --> TR["中文 · 韩语机器翻译"]
     VPI --> DB[("PostgreSQL")]
     TR --> DB
     DB --> API["REST API"]
@@ -61,6 +70,8 @@ flowchart LR
 
 ## 数据源与更新周期
 
+下表时间均为韩国标准时间（KST，UTC+9），比北京时间早 1 小时，例如 KST 09:00 即北京时间 08:00。
+
 | 来源 | 采集内容 | 更新（KST） |
 |------|-------------|-----------|
 | NVD | CVE 正文、CVSS v2/v3.x/v4.0、CPE 受影响产品、CWE、NVD 处理状态 | 每天 09:00 · 21:00 |
@@ -71,7 +82,7 @@ flowchart LR
 | Exploit-DB | 是否存在公开漏洞利用（PoC） | 每天 02:30 |
 | nuclei-templates | 是否有远程检测模板 | 每天 05:00 |
 | PoC-in-GitHub | 公开 PoC 仓库链接与数量（自动采集，未经验证） | 每天 05:10 |
-| KISA 保护那罗 | 安全公告编号·标题·日期·原文链接、受影响产品表、公告 ↔ CVE 映射 | 每天 09:30 · 21:30 |
+| KISA 保护那罗（韩国） | 安全公告编号·标题·日期·原文链接、受影响产品表、公告 ↔ CVE 映射 | 每天 09:30 · 21:30 |
 
 采集之后的后续任务也按固定时间运行。
 
@@ -80,9 +91,9 @@ flowchart LR
 | VPI 重新计算（EPSS 更新部分在采集时同步反映） | 每天 06:00 |
 | 处置通报发布 / 通报邮件 | 每天 06:30 / 07:00 |
 | 订阅通知每日摘要 | 每天 09:00 |
-| 翻译（韩语 · 中文） | 每 3 小时 |
+| 翻译（中文 · 韩语） | 每 3 小时 |
 
-此外，扫描时选择**精确检测**，会从 deps.dev（Google Open Source Insights）查询组件许可证、是否停止维护以及 OpenSSF Scorecard 分数，并附加到结果中。
+此外，扫描时选择精确检测，会从 deps.dev（Google Open Source Insights）查询组件许可证、是否停止维护以及 OpenSSF Scorecard 分数，并附加到结果中。
 
 ### 数据规模
 
@@ -98,8 +109,9 @@ flowchart LR
 | CWE 映射 | 399,378 |
 | 软件包影响范围 | 88,615 |
 | CISA KEV 收录 | 1,745 |
-| KISA 安全公告 | 2,562 |
+| 中文翻译已完成 | 73,304 |
 | 韩语翻译已完成 | 128,167 |
+| KISA 安全公告（韩国） | 2,562 |
 
 ---
 
@@ -113,9 +125,9 @@ flowchart LR
 - 受影响软件包（生态系统·版本范围·修复版本）及基于 NVD CPE 的受影响产品
 - CISA KEV 收录日期·修复期限·是否被勒索软件利用，以及按类型分类的处置指示
 - EPSS 概率·百分位、是否有公开漏洞利用、nuclei 检测模板、PoC-in-GitHub 仓库数
-- KISA 保护那罗安全公告映射（编号·标题·日期·原文链接）
 - CWE、NVD 处理状态、为该记录提供数据的来源列表
 - VPI 分数·等级及其计算依据
+- KISA 保护那罗（韩国）安全公告映射（编号·标题·日期·原文链接）
 
 列表 API 可按严重程度、是否收录于 KEV、是否有 KISA 公告、公开漏洞利用、是否有检测模板、勒索软件、生态系统、CVSS·VPI·EPSS 范围、VPI 等级、发布日期、厂商·产品进行筛选，并可按 VPI·CVSS·EPSS·KEV 收录日期等排序。
 
@@ -191,23 +203,23 @@ VPI = min( 基准分(档位) + 幅度(档位) × CVSS / 10 + 勒索软件加分,
 
 每天早上挑出新收录于 CISA KEV 的漏洞，以及已知 CVE 后来才出现公开漏洞利用的情况，发布为通报。没有符合条件的漏洞时当天不发布。
 
-- 每个 CVE 都整理了韩语摘要、影响范围与补丁版本、已安装版本的确认命令、KISA 公告链接、CISA 处置指示、PoC 来源。
-- 通报可下载为 XLSX 处置台账，也可通过邮件（KST 07:00）接收。
+- 每个 CVE 都整理了摘要（目前仅有韩语版）、影响范围与补丁版本、已安装版本的确认命令、CISA 处置指示、PoC 来源，以及 KISA 公告链接（如有）。
+- 通报可下载为 XLSX 处置台账，也可通过邮件（KST 07:00，即北京时间 06:00）接收。
 - 可为每一项记录处置状态（未处置 · 处置中 · 处置完成 · 不予处置 · 不适用）及原因；未处置的项会通过提醒邮件再次通知。
 
 ### 5. 通知
 
-订阅关注对象后，每天 KST 09:00 汇总发送符合条件的新漏洞。
+订阅关注对象后，每天 KST 09:00（北京时间 08:00）汇总发送符合条件的新漏洞。
 
 - 订阅对象：软件包（生态系统 + 名称）、CVE、厂商、CISA KEV 新收录
 - 渠道：Email · Slack（Incoming Webhook）· Telegram（Bot）
 - 发送记录可在设置页面查看。
 
-### 6. 韩语 · 韩国本地信息
+### 6. 中文支持与 KISA 公告
 
-- 界面支持韩语 · 英语 · 中文（简体）。
-- CVE 标题和描述会机器翻译为韩语和中文，按 VPI 从高到低依次填充。尚未翻译的条目显示英文原文。
-- 将 KISA 保护那罗安全公告与 CVE 关联，在详情页和仪表盘中展示。公告正文保留版权，因此只处理编号·标题·日期·原文链接·受影响产品表等事实信息。
+- 界面支持简体中文 · 英语 · 韩语。
+- CVE 标题和描述会机器翻译为中文和韩语，按 VPI 从高到低依次填充。截至 2026-10-16，中文已完成 73,304 条。尚未翻译的条目显示英文原文。
+- 面向在韩开展业务或服务韩国客户的团队：KISA 保护那罗（韩国互联网振兴院）的安全公告会与 CVE 关联，在详情页和仪表盘中展示。公告正文保留版权，因此只处理编号·标题·日期·原文链接·受影响产品表等事实信息。
 
 ---
 
@@ -323,15 +335,16 @@ echo "$RES" | jq '.result.summary, .result.policy.violations'
 echo "$RES" | jq -e '.result.policy.passed == true' > /dev/null
 ```
 
-如果 `result.summary.unknown_vulnerabilities` 大于 0，或 `warnings` 中出现不支持的生态系统，说明存在未能判定的项。建议此时不要按通过处理。VEX 文档可通过 `-F vex=@openvex.json`、精确检测可通过 `-F scan_depth=precise` 一并提交。
+如果 `result.summary.unknown_vulnerabilities` 大于 0，或 `warnings` 中出现不支持的生态系统，说明存在未能判定的项，建议不要按通过处理。VEX 文档可通过 `-F vex=@openvex.json`、精确检测可通过 `-F scan_depth=precise` 一并提交。
 
 ---
 
 ## 支持范围与限制
 
 - **仅判定编程语言生态的软件包。** 暂不支持 Linux 发行版软件包（deb·rpm·apk）、容器镜像直接扫描以及 Windows·macOS。上传包含此类组件的 SBOM 时，这些项会单独标记为 `unsupported`。不支持不代表安全。
+- **不含 CNVD、CNNVD 数据。** 数据源仅为上文所列 9 个公开来源，未采集 CNVD、CNNVD 等中国漏洞库，也不提供这些库的编号映射。
 - **相同输入的结果会复用 24 小时。** 24 小时内用同一文件和同一策略再次扫描时会返回之前的结果，因此期间新收录的 KEV 可能不会立即反映。
-- **翻译为机器翻译。** 并非全部漏洞都有翻译，只有一部分（截至 2026-10-16，韩语 128,167 条）已翻译，按优先级从高到低填充。
+- **翻译为机器翻译。** 并非全部漏洞都有翻译。截至 2026-10-16，中文已翻译 73,304 条（韩语 128,167 条），按优先级从高到低填充。术语有疑问时请以英文原文为准。
 - **PoC 链接未经验证。** PoC-in-GitHub 是自动采集的列表，可能混有恶意代码。响应中也会标记为 `verified: false`。
 - **VPI 是辅助判断的指标。** 不反映资产暴露范围、配置、补偿性控制等环境信息。
 
@@ -401,4 +414,4 @@ API 的所有响应都会在 `X-Data-Attribution` 响应头中附带来源摘要
 
 ## 联系我们
 
-引入与集成咨询：[网站咨询表单](https://www.vulnintelapp.com/zh/pilot?type=enterprise)
+企业接入与集成咨询：[网站咨询表单](https://www.vulnintelapp.com/zh/pilot?type=enterprise)
