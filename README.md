@@ -2,6 +2,8 @@
 
 # VulnIntel
 
+**한국어** · [English](README.en.md) · [简体中文](README.zh-CN.md)
+
 **NVD · OSV · GitHub Advisory · CISA KEV · EPSS · Exploit-DB · KISA 보호나라 등 9개 공개 소스의 취약점 데이터를 웹과 API 하나로 제공합니다.**
 
 [![Website](https://img.shields.io/badge/Website-www.vulnintelapp.com-5b8def?style=for-the-badge)](https://www.vulnintelapp.com/)
@@ -217,7 +219,7 @@ lock 파일이나 SBOM을 올리면 비동기 작업으로 처리하고, 패키�
 |-------------|----------------------------------|
 | 통합 검색, CVE 상세 | 의존성·SBOM 스캔과 스캔 이력 |
 | 대시보드 (신규 CVE 추이, KEV·KISA 최근 등재, 고위험 CVE, 영향 패키지 상위) | 조치 리포트, 조치 대장 |
-| 벤더·제품 카탈로그, VPI 랭킹 | 알림 구독과 채널 설정 |
+| 벤더·제품 카탈로그, CVSS 사각지대 랭킹 | 알림 구독과 채널 설정 |
 | 보안 블로그, 개발자 포털 | API 키 발급 (계정당 3개) |
 
 PoC-in-GitHub 저장소 링크는 로그인한 사용자에게만 보여주고, 로그인하지 않으면 개수만 보여줍니다.
